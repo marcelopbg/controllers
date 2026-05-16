@@ -339,6 +339,22 @@ test("utility columns follow baseline deck groups", () => {
     assert.equal(h.controller.faders[7].group, "[Channel4]");
 });
 
+test("two-deck utility sync buttons map to deck 1 and deck 2", () => {
+    const h = createHarness();
+
+    assert.equal(h.controller.syncButtons[0].group, "[Channel1]");
+    assert.equal(h.controller.syncButtons[0].inKey, "sync_enabled");
+    assert.equal(h.controller.syncButtons[0].midi[0], 0x90);
+    assert.equal(h.controller.syncButtons[0].midi[1], 0x12);
+
+    assert.equal(h.controller.syncButtons[1].group, "[Channel2]");
+    assert.equal(h.controller.syncButtons[1].inKey, "sync_enabled");
+    assert.equal(h.controller.syncButtons[1].midi[0], 0x90);
+    assert.equal(h.controller.syncButtons[1].midi[1], 0x15);
+
+    assert.equal(h.controller.keylockButtons[1].midi[1], 0x05);
+});
+
 test("two-deck mode remaps channel 3/4 requests back to channel 1/2", () => {
     const h = createHarness();
     h.controller.deckMode = "two";

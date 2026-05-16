@@ -1,74 +1,52 @@
-# MVave SMC Mixer - Handoff Context and Plan
+# MVave SMC Mixer - Current Mapping Notes
 
-## Why this handoff exists
+## Current behavior (implemented)
 
-This mapping work became unstable because multiple concerns were changed at once (deck routing, LED behavior, control swaps, and probe/debug code).  
-The file has been reverted to a stable baseline so the next iteration can proceed safely.
+This preset currently targets a centered 2-deck workflow and intentionally repurposes controls:
 
-The core lesson: **test-first and incremental changes only**.
+- Deck 1 EQ lives on **column 4**
+- Deck 2 EQ lives on **column 5**
+- **Column 3 is disabled** (bricked) to avoid accidental duplicate control/LED behavior
 
-## Current known context
+The active mapping pair is:
 
-- Working file baseline: `MVave-SMC-Mixer-scripts.js` (reverted by user).
-- Desired target UX is a 2-deck centered layout:
-  - Deck 1 on column 4
-  - Deck 2 on column 5
-  - Column 1 = crossfader
-  - Column 3 utility for Deck 1: speed slider + Sync/Loop/Keylock/Hotcue1 buttons
-  - Column 6 utility for Deck 2: speed slider + Sync/Loop/Keylock/Hotcue1 buttons
-  - Columns 2, 7, 8 intentionally empty
-- LED discovery findings:
-  - Some LEDs respond (EQ block and beatjump left/right were confirmed during probing).
-  - Soft-takeover/deck-select LEDs did not respond reliably with broad generic MIDI sweeps.
-- Additional repo context:
-  - `MVave-SMC-Mixer.midi.xml` points to `MVave-SMC-Mixer-scripts.js`.
-  - A copied custom JS file is not loaded unless explicitly referenced by XML.
-  - VID/PID overlap exists with another preset in repo (`MVave-SMK-25-II`), so keep mapping selection in mind when testing.
+- `MVave-SMC-Mixer.midi.xml`
+- `MVave-SMC-Mixer-scripts.js`
 
----
+## Deck EQ routing summary
 
-## MANDATORY FIRST TASK (before any new feature work)
+### Deck 1 (column 4)
 
-**Add tests first. Do not implement new mapping changes before tests exist.**
+- Buttons: `0x03 / 0x0B / 0x13 / 0x1B`
+- Knob: `0x13`
+- Group target: `eqButtons[1]` / Channel 1 EQ group
 
-### Required testing goal
+### Deck 2 (column 5)
 
-Build well-structured unit tests that lock down **current baseline behavior** of `MVave-SMC-Mixer-scripts.js` so refactors/remaps can be done safely.
+- Buttons: `0x04 / 0x0C / 0x14 / 0x1C`
+- Knob: `0x14`
+- Group target: `eqButtons[2]` / Channel 2 EQ group
 
-### Minimum behavior coverage expected
+### Column 3 mostly disabled
 
-1. Long-press modal behavior for EQ/Effect buttons:
-   - mode activation/deactivation
-   - blink start/stop lifecycle
-   - single active modal blink at a time
-2. Short-press behavior for those buttons remains intact.
-3. Deck switching behavior (current baseline, including 2-deck constraints if present).
-4. LED output helper behavior:
-   - sends expected MIDI messages
-   - does not leave stale timers/state
-5. Any existing custom logic for beatjump/deck-select indicator interactions.
+These controls are intentionally routed to a no-op input handler (`deadColumn3Input`) so they do nothing:
 
-### Test quality bar
+- Buttons: `0x02 / 0x0A / 0x12`
+- Knob: `0x12`
 
-- Tests must assert both control-side effects (`engine.setValue` / parameter changes) and MIDI output side effects (`midi.sendShortMsg`).
-- Timer behavior must be deterministic in tests (fake timer hooks or mocked timer scheduler).
-- Each test should validate one behavior clearly; avoid broad “integration blob” tests.
+Exception:
 
----
+- **Top M button in column 3 (`0x12`) is now Deck 1 Sync (`[Channel1] sync_enabled`)**
+- **Top M button in column 6 (`0x15`) is now Deck 2 Sync (`[Channel2] sync_enabled`)**
 
-## Implementation plan after tests are in place
+## LED behavior notes
 
-1. Freeze baseline and remove temporary/debug-only probe behavior unless explicitly needed.
-2. Implement centered 2-deck remap in slices:
-   - Slice A: faders only
-   - Slice B: utility buttons only
-   - Slice C: knob alignment only
-3. After each slice, update/extend tests and verify no baseline regressions.
-4. Only then handle deck-indicator LED strategy using known-addressable LEDs.
+- EQ LED output for Deck 1/2 is explicitly aligned to the repurposed column addresses in script logic.
+- Utility LED controls that would collide with Deck EQ LEDs are offset away from the repurposed area in 2-deck mode.
+- Startup lighting now lights columns **4 and 5** (not 3 and 4), matching the Deck 1/2 EQ layout.
 
-## Safety rules for next agent
+## Important implementation details
 
-- One isolated change block per commit.
-- No mixed refactor + feature + debug additions in one change.
-- Keep rollback easy.
-- If behavior is uncertain, instrument with temporary logging only under an explicit debug flag and remove before finalizing.
+- The no-op handler is created as `SMCMixer.controller.deadColumn3Input` in `MVave-SMC-Mixer-scripts.js`.
+- EQ MIDI addresses are explicitly set by index arrays in `EqRack` to prevent implicit sequential collisions.
+- In 2-deck mode, first utility-column LED controls are shifted with an offset to keep Deck EQ LED feedback stable.

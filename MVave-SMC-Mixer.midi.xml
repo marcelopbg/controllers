@@ -122,8 +122,8 @@
       </control>
       <control>
         <group>[Channel1]</group>
-        <key>SMCMixer.controller.deadColumn3Input.input</key>
-        <description>Third M button (disabled).</description>
+        <key>SMCMixer.controller.syncButtons[0].input</key>
+        <description>Third M button (Deck 1 Sync).</description>
         <status>0x90</status>
         <midino>0x12</midino>
         <options>
@@ -192,9 +192,9 @@
         </options>
       </control>
       <control>
-        <group>[Channel1]</group>
-        <key>SMCMixer.controller.slipButtons[1].input</key>
-        <description>Sixth M button.</description>
+        <group>[Channel2]</group>
+        <key>SMCMixer.controller.syncButtons[1].input</key>
+        <description>Sixth M button (Deck 2 Sync).</description>
         <status>0x90</status>
         <midino>0x15</midino>
         <options>

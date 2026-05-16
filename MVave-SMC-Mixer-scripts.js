@@ -335,6 +335,7 @@ var SMCMixer;
             this.quantizeButtons = new Array(4);
             this.keylockButtons = new Array(4);
             this.pflButtons = new Array(4);
+            this.syncButtons = new Array(2);
             this.faders = new Array(8);
             for (let i = 0; i < 4; i++) {
                 const channel = mapIndexToChannel(i);
@@ -390,6 +391,21 @@ var SMCMixer;
                     softTakeover: true,
                 });
             }
+
+            this.syncButtons[0] = new components.Button({
+                type: components.Button.prototype.types.toggle,
+                group: "[Channel1]",
+                midi: [0x90, 0x12],
+                key: "sync_enabled",
+            });
+            this.registerDeckLedComponent(this.syncButtons[0]);
+            this.syncButtons[1] = new components.Button({
+                type: components.Button.prototype.types.toggle,
+                group: "[Channel2]",
+                midi: [0x90, 0x15],
+                key: "sync_enabled",
+            });
+            this.registerDeckLedComponent(this.syncButtons[1]);
 
 
             this.registerDeckLedComponent(this.activeDeck.playButton);
