@@ -146,9 +146,14 @@ var SMCMixer;
         constructor(index) {
             super({});
             const channel = mapIndexToChannel(index);
+            const knobMidiByIndex = [0x10, 0x13, 0x14, 0x54];
+            const lowMidiByIndex = [0x00, 0x03, 0x04, 0x44];
+            const midMidiByIndex = [0x08, 0x0B, 0x0C, 0x4C];
+            const highMidiByIndex = [0x10, 0x13, 0x14, 0x54];
+            const quickMidiByIndex = [0x18, 0x1B, 0x1C, 0x5C];
             this.knob = new Encoder({
                 group: `[Channel${channel}]`,
-                midi: [0xB0, 0x10 + index],
+                midi: [0xB0, knobMidiByIndex[index]],
                 inKey: "pregain",
             });
 
@@ -249,7 +254,7 @@ var SMCMixer;
             this.highKillButton = new LongPressButton({
                 type: components.Button.prototype.types.powerWindow,
                 group: `[EqualizerRack1_[Channel${channel}]_Effect1]`,
-                midi: [0x90, 0x10 + index],
+                midi: [0x90, highMidiByIndex[index]],
                 key: "button_parameter3",
                 output: function (value) {
                     if (this.blinkTimer && this.blinkTimer !== 0) {
@@ -262,7 +267,7 @@ var SMCMixer;
             this.midKillButton = new LongPressButton({
                 type: components.Button.prototype.types.toggle,
                 group: `[EqualizerRack1_[Channel${channel}]_Effect1]`,
-                midi: [0x90, 0x08 + index],
+                midi: [0x90, midMidiByIndex[index]],
                 key: "button_parameter2",
                 output: function (value) {
                     if (this.blinkTimer && this.blinkTimer !== 0) {
@@ -275,7 +280,7 @@ var SMCMixer;
             this.lowKillButton = new LongPressButton({
                 type: components.Button.prototype.types.toggle,
                 group: `[EqualizerRack1_[Channel${channel}]_Effect1]`,
-                midi: [0x90, 0x00 + index],
+                midi: [0x90, lowMidiByIndex[index]],
                 key: "button_parameter1",
                 output: function (value) {
                     if (this.blinkTimer && this.blinkTimer !== 0) {
@@ -288,7 +293,7 @@ var SMCMixer;
             this.quickEffectButton = new LongPressButton({
                 type: components.Button.prototype.types.toggle,
                 group: `[QuickEffectRack1_[Channel${channel}]]`,
-                midi: [0x90, 0x18 + index],
+                midi: [0x90, quickMidiByIndex[index]],
                 key: "enabled",
                 inToggle: btnInToggle(),
             });
@@ -325,7 +330,6 @@ var SMCMixer;
             this.bootLedTestEnabled = true;
             this.bootLedTestTimer = 0;
             this.bootLedTestIntervalMs = 120;
-
             this.eqButtons = new Array(4);
             this.slipButtons = new Array(4);
             this.quantizeButtons = new Array(4);
@@ -335,6 +339,7 @@ var SMCMixer;
             for (let i = 0; i < 4; i++) {
                 const channel = mapIndexToChannel(i);
                 const group = `[Channel${channel}]`;
+                const repurposedColumnOffset = (i === 0 && !this.isFourDeckMode()) ? 0x40 : 0;
                 this.eqButtons[i] = new EqRack(i);
                 this.registerDeckLedComponent(this.eqButtons[i].lowKillButton);
                 this.registerDeckLedComponent(this.eqButtons[i].midKillButton);
@@ -343,30 +348,34 @@ var SMCMixer;
                 this.slipButtons[i] = new components.Button({
                     type: components.Button.prototype.types.toggle,
                     group: group,
-                    midi: [0x90, i + 0x14],
+                    midi: [0x90, i + 0x14 + repurposedColumnOffset],
                     key: "slip_enabled",
                 });
+                this.slipButtons[i].skipDeckStateRefresh = true;
                 this.registerDeckLedComponent(this.slipButtons[i]);
                 this.quantizeButtons[i] = new components.Button({
                     type: components.Button.prototype.types.toggle,
                     group: group,
-                    midi: [0x90, 0x0C + i],
+                    midi: [0x90, 0x0C + i + repurposedColumnOffset],
                     key: "quantize",
                 });
+                this.quantizeButtons[i].skipDeckStateRefresh = true;
                 this.registerDeckLedComponent(this.quantizeButtons[i]);
                 this.keylockButtons[i] = new components.Button({
                     type: components.Button.prototype.types.toggle,
                     group: group,
-                    midi: [0x90, 0x04 + i],
+                    midi: [0x90, 0x04 + i + repurposedColumnOffset],
                     key: "keylock",
                 });
+                this.keylockButtons[i].skipDeckStateRefresh = true;
                 this.registerDeckLedComponent(this.keylockButtons[i]);
                 this.pflButtons[i] = new components.Button({
                     type: components.Button.prototype.types.toggle,
                     group: group,
-                    midi: [0x90, 0x1C + i],
+                    midi: [0x90, 0x1C + i + repurposedColumnOffset],
                     key: "pfl",
                 });
+                this.pflButtons[i].skipDeckStateRefresh = true;
                 this.registerDeckLedComponent(this.pflButtons[i]);
                 this.faders[i] = new Pot({
                     group: group,
@@ -381,6 +390,8 @@ var SMCMixer;
                     softTakeover: true,
                 });
             }
+
+
             this.registerDeckLedComponent(this.activeDeck.playButton);
             this.registerDeckLedComponent(this.activeDeck.cueButton);
             this.registerDeckLedComponent(this.activeDeck.backButton);
@@ -468,6 +479,10 @@ var SMCMixer;
                 inKey: "toggle_recording",
                 outKey: "status",
             });
+            this.deadColumn3Input = new components.Button({
+                group: "[Channel1]",
+                input: function () {},
+            });
             this.deckLeftButton = new components.Button({
                 type: components.Button.prototype.types.powerWindow,
                 group: "[Channel1]",
@@ -494,7 +509,8 @@ var SMCMixer;
             });
             this.updateDeckLedVisibility();
             this.updateDeckSelectIndicatorLeds();
-            this.startBootLedTest();
+            this.lightAllColumnsOnLoad();
+            // this.startBootLedTest();
         }
 
         getDeckMode() {
@@ -541,6 +557,17 @@ var SMCMixer;
             const isDeck2 = this.activeDeck.currentDeck === "[Channel2]";
             this.setButtonLedFromMidi(this.activeDeck.backButton, isDeck2 ? 0x00 : 0x7F);
             this.setButtonLedFromMidi(this.activeDeck.forwardButton, isDeck2 ? 0x7F : 0x00);
+        }
+
+        lightAllColumnsOnLoad() {
+            for (let control = 0x00; control <= 0x1F; control++) {
+                midi.sendShortMsg(0x90, control, 0x00);
+            }
+            // In two-deck mode, Deck 1/2 EQ uses the 4th and 5th columns.
+            for (let blockBase = 0x00; blockBase <= 0x18; blockBase += 0x08) {
+                midi.sendShortMsg(0x90, blockBase + 0x03, 0x7F);
+                midi.sendShortMsg(0x90, blockBase + 0x04, 0x7F);
+            }
         }
 
         createDeckLedProbeCases(statusBytes) {
@@ -604,6 +631,7 @@ var SMCMixer;
 
                 if (this.deckLedProbeIndex >= this.deckLedProbeCases.length) {
                     this.stopBootLedTest();
+                    this.updateDeckLedVisibility();
                     this.updateDeckSelectIndicatorLeds();
                     print("[MVAVE LED BOOT TEST] finished");
                     return;
@@ -664,6 +692,10 @@ var SMCMixer;
 
         updateDeckLedVisibility() {
             for (const component of this.deckLedComponents) {
+                if (component.skipDeckStateRefresh) {
+                    midi.sendShortMsg(component.midi[0], component.midi[1], 0x00);
+                    continue;
+                }
                 if (!this.isDeckComponentEnabled(component)) {
                     midi.sendShortMsg(component.midi[0], component.midi[1], 0x00);
                     continue;
