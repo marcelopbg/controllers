@@ -548,6 +548,13 @@ var SMCMixer;
                             engine.setValue(this.group, targetKey, 0);
                         },
                     });
+                    this.hotcueButtons[deckIndex][hotcueIndex].outKey = enabledKey;
+                    if (typeof this.hotcueButtons[deckIndex][hotcueIndex].disconnect === "function") {
+                        this.hotcueButtons[deckIndex][hotcueIndex].disconnect();
+                    }
+                    if (typeof this.hotcueButtons[deckIndex][hotcueIndex].connect === "function") {
+                        this.hotcueButtons[deckIndex][hotcueIndex].connect();
+                    }
                     this.registerDeckLedComponent(this.hotcueButtons[deckIndex][hotcueIndex]);
                 }
 

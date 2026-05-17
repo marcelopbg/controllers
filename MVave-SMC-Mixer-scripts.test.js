@@ -446,11 +446,15 @@ test("hotcues and bottom-row FX buttons map to columns 1/2/7/8", () => {
 
     assert.equal(h.controller.hotcueButtons[0][0].midi[1], 0x11);
     assert.equal(h.controller.hotcueButtons[0][1].midi[1], 0x09);
+    assert.equal(h.controller.hotcueButtons[0][0].outKey, "hotcue_1_enabled");
+    assert.equal(h.controller.hotcueButtons[0][1].outKey, "hotcue_2_enabled");
     assert.equal(h.controller.fxButtons[0][0].midi[1], 0x18);
     assert.equal(h.controller.fxButtons[0][1].midi[1], 0x19);
 
     assert.equal(h.controller.hotcueButtons[1][0].midi[1], 0x16);
     assert.equal(h.controller.hotcueButtons[1][1].midi[1], 0x0E);
+    assert.equal(h.controller.hotcueButtons[1][0].outKey, "hotcue_1_enabled");
+    assert.equal(h.controller.hotcueButtons[1][1].outKey, "hotcue_2_enabled");
     assert.equal(h.controller.fxButtons[1][0].midi[1], 0x1E);
     assert.equal(h.controller.fxButtons[1][1].midi[1], 0x1F);
 });
