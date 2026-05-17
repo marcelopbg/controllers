@@ -1,8 +1,8 @@
 # MVave SMC Mixer - Current Mapping Notes
 
-## Current behavior (implemented)
+## Current behavior (implemented and stable)
 
-This preset currently targets a centered 2-deck workflow and intentionally repurposes controls:
+This preset currently targets a centered two-deck workflow and intentionally repurposes controls:
 
 - Deck 1 EQ lives on **column 4**
 - Deck 2 EQ lives on **column 5**
@@ -59,7 +59,7 @@ Completed:
 
 Remaining next steps:
 
-- Map **Hot Cue** — all button rows in columns 3 and 6 are now used; hot cues will need a shift/layer approach.
+- Map **Hotcue** — all button rows in columns 3 and 6 are currently used, so hotcues will need a shift/layer approach.
 
 ## LED behavior notes
 
@@ -73,4 +73,4 @@ Remaining next steps:
 - EQ MIDI addresses are explicitly set by index arrays in `EqRack` to prevent implicit sequential collisions.
 - `loopButtons` are registered as deck LED components and track `loop_enabled` for real-time LED feedback.
 - `loopDoubleButtons` and `loopHalveButtons` have `skipDeckStateRefresh = true` (no meaningful LED state).
-- `keylockButtons[1]`, `quantizeButtons[1]`, and `pflButtons[1]` are still initialized but their MIDI bindings (`0x05`, `0x0D`, `0x1D`) have been reassigned to loop controls for Deck 2.
+- `keylockButtons[1]`, `quantizeButtons[1]`, and `pflButtons[1]` are still initialized, but their MIDI bindings (`0x05`, `0x0D`, `0x1D`) are reassigned to Deck 2 loop controls.

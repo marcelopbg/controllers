@@ -33,7 +33,13 @@ function createHarness() {
             engineValues.set(keyFor(group, key), value);
         },
         getValue(group, key) {
-            return engineValues.get(keyFor(group, key)) ?? 0;
+            if (engineValues.has(keyFor(group, key))) {
+                return engineValues.get(keyFor(group, key));
+            }
+            if (/^hotcue_\d+_position$/.test(key)) {
+                return -1;
+            }
+            return 0;
         },
         setParameter(group, key, value) {
             engineParameters.set(keyFor(group, key), value);
@@ -352,7 +358,7 @@ test("two-deck utility sync buttons map to deck 1 and deck 2", () => {
     assert.equal(h.controller.syncButtons[1].midi[0], 0x90);
     assert.equal(h.controller.syncButtons[1].midi[1], 0x15);
 
-    assert.equal(h.controller.keylockButtons[1].midi[1], 0x05);
+    assert.equal(h.controller.keylockButtons[1].midi[1], 0x45);
 });
 
 test("two-deck mode remaps channel 3/4 requests back to channel 1/2", () => {
@@ -433,4 +439,153 @@ test("beatjump back and forward buttons pulse corresponding engine controls", ()
         {group: forward.group, key: "beatjump_forward", value: 1},
         {group: forward.group, key: "beatjump_forward", value: 0},
     ]);
+});
+
+test("hotcues and bottom-row FX buttons map to columns 1/2/7/8", () => {
+    const h = createHarness();
+
+    assert.equal(h.controller.hotcueButtons[0][0].midi[1], 0x11);
+    assert.equal(h.controller.hotcueButtons[0][1].midi[1], 0x09);
+    assert.equal(h.controller.fxButtons[0][0].midi[1], 0x18);
+    assert.equal(h.controller.fxButtons[0][1].midi[1], 0x19);
+
+    assert.equal(h.controller.hotcueButtons[1][0].midi[1], 0x16);
+    assert.equal(h.controller.hotcueButtons[1][1].midi[1], 0x0E);
+    assert.equal(h.controller.fxButtons[1][0].midi[1], 0x1E);
+    assert.equal(h.controller.fxButtons[1][1].midi[1], 0x1F);
+});
+
+test("hotcue shortcut sets when empty and activates when already set", () => {
+    const h = createHarness();
+    const button = h.controller.hotcueButtons[0][0];
+    const setCalls = [];
+    const originalSetValue = h.engine.setValue;
+    h.engine.setValue = (group, key, value) => {
+        setCalls.push({group: group, key: key, value: value});
+        originalSetValue(group, key, value);
+    };
+
+    h.engine.setValue(button.group, button.hotcuePositionKey, -1);
+    pressAndRelease(button);
+    h.engine.setValue(button.group, button.hotcuePositionKey, 123.45);
+    pressAndRelease(button);
+
+    const hotcueCalls = setCalls.filter((entry) => entry.key === "hotcue_1_set" || entry.key === "hotcue_1_activate");
+    assert.deepEqual(hotcueCalls, [
+        {group: button.group, key: "hotcue_1_set", value: 1},
+        {group: button.group, key: "hotcue_1_set", value: 0},
+        {group: button.group, key: "hotcue_1_activate", value: 1},
+        {group: button.group, key: "hotcue_1_activate", value: 0},
+    ]);
+});
+
+test("hotcue long press clears when set", () => {
+    const h = createHarness();
+    const button = h.controller.hotcueButtons[0][0];
+    const setCalls = [];
+    const originalSetValue = h.engine.setValue;
+    h.engine.setValue = (group, key, value) => {
+        setCalls.push({group: group, key: key, value: value});
+        originalSetValue(group, key, value);
+    };
+    h.engine.setValue(button.group, button.hotcuePositionKey, 44.1);
+
+    button.input(0, 0, 0x7F, 0x90, button.group);
+    h.runTimer(button.longPressTimer);
+    button.input(0, 0, 0x00, 0x90, button.group);
+
+    const clearCalls = setCalls.filter((entry) => entry.key === "hotcue_1_clear");
+    assert.deepEqual(clearCalls, [
+        {group: button.group, key: "hotcue_1_clear", value: 1},
+        {group: button.group, key: "hotcue_1_clear", value: 0},
+    ]);
+});
+
+test("column FX buttons toggle effect unit button states", () => {
+    const h = createHarness();
+    const button1 = h.controller.fxButtons[1][0];
+    const button2 = h.controller.fxButtons[1][1];
+    assert.equal(h.engine.getValue("[EffectRack1_EffectUnit1]", "group_[Channel1]_enable"), 1);
+    assert.equal(h.engine.getValue("[EffectRack1_EffectUnit2]", "group_[Channel2]_enable"), 1);
+
+    button1.inToggle();
+    button2.inToggle();
+    assert.equal(h.engine.getValue(button1.group, button1.inKey), 0x1F);
+    assert.equal(h.engine.getValue(button2.group, button2.inKey), 0x1F);
+
+    button1.inToggle();
+    button2.inToggle();
+    assert.equal(h.engine.getValue(button1.group, button1.inKey), 0);
+    assert.equal(h.engine.getValue(button2.group, button2.inKey), 0);
+});
+
+test("knobs 1/2/7/8 map to deck effect knobs", () => {
+    const h = createHarness();
+    assert.equal(h.controller.effectKnobs[0][0].midi[1], 0x10);
+    assert.equal(h.controller.effectKnobs[0][1].midi[1], 0x11);
+    assert.equal(h.controller.effectKnobs[1][0].midi[1], 0x16);
+    assert.equal(h.controller.effectKnobs[1][1].midi[1], 0x17);
+});
+
+test("beatloop buttons output LED state from loop_enabled", () => {
+    const h = createHarness();
+    assert.equal(h.controller.loopButtons[0].outKey, "loop_enabled");
+    assert.equal(h.controller.loopButtons[1].outKey, "loop_enabled");
+    assert.equal(h.controller.loopHalveButtons[0].outKey, "loop_enabled");
+    assert.equal(h.controller.loopHalveButtons[1].outKey, "loop_enabled");
+});
+
+test("active beatloop blinks LED and stops when loop is disabled", () => {
+    const h = createHarness();
+    const button = h.controller.loopHalveButtons[0];
+
+    button.output(1);
+    assert.notEqual(button.blinkTimer, 0);
+    assert.deepEqual(h.midiMessages[h.midiMessages.length - 1], {
+        status: button.midi[0],
+        control: button.midi[1],
+        value: 0x00,
+    });
+
+    h.runTimer(button.blinkTimer);
+    assert.deepEqual(h.midiMessages[h.midiMessages.length - 1], {
+        status: button.midi[0],
+        control: button.midi[1],
+        value: 0x7F,
+    });
+
+    const blinkTimerId = button.blinkTimer;
+    button.output(0);
+    assert.equal(button.blinkTimer, 0);
+    assert.ok(h.stoppedTimers.includes(blinkTimerId));
+    assert.deepEqual(h.midiMessages[h.midiMessages.length - 1], {
+        status: button.midi[0],
+        control: button.midi[1],
+        value: 0x00,
+    });
+});
+
+test("main loop button also blinks on active loop and stops on disable", () => {
+    const h = createHarness();
+    const button = h.controller.loopButtons[0];
+
+    button.output(1);
+    assert.notEqual(button.blinkTimer, 0);
+
+    h.runTimer(button.blinkTimer);
+    assert.deepEqual(h.midiMessages[h.midiMessages.length - 1], {
+        status: button.midi[0],
+        control: button.midi[1],
+        value: 0x7F,
+    });
+
+    const blinkTimerId = button.blinkTimer;
+    button.output(0);
+    assert.equal(button.blinkTimer, 0);
+    assert.ok(h.stoppedTimers.includes(blinkTimerId));
+    assert.deepEqual(h.midiMessages[h.midiMessages.length - 1], {
+        status: button.midi[0],
+        control: button.midi[1],
+        value: 0x00,
+    });
 });

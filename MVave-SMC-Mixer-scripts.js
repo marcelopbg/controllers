@@ -339,6 +339,9 @@ var SMCMixer;
             this.loopButtons = new Array(2);
             this.loopDoubleButtons = new Array(2);
             this.loopHalveButtons = new Array(2);
+            this.hotcueButtons = [new Array(2), new Array(2)];
+            this.fxButtons = [new Array(2), new Array(2)];
+            this.effectKnobs = [new Array(2), new Array(2)];
             this.faders = new Array(8);
             for (let i = 0; i < 4; i++) {
                 const channel = mapIndexToChannel(i);
@@ -416,13 +419,42 @@ var SMCMixer;
             const doublesMidi = [0x0A, 0x0D];
             const halveMidi  = [0x1A, 0x1D];
             for (let i = 0; i < 2; i++) {
+                const loopActiveOutput = function (value) {
+                    if (value > 0) {
+                        if (!this.blinkTimer || this.blinkTimer === 0) {
+                            this.blinkState = false;
+                            midi.sendShortMsg(this.midi[0], this.midi[1], 0x00);
+                            this.blinkTimer = engine.beginTimer(300, () => {
+                                this.blinkState = !this.blinkState;
+                                midi.sendShortMsg(this.midi[0], this.midi[1], this.blinkState ? 0x7F : 0x00);
+                            });
+                        }
+                        return;
+                    }
+                    if (this.blinkTimer && this.blinkTimer !== 0) {
+                        engine.stopTimer(this.blinkTimer);
+                        this.blinkTimer = 0;
+                    }
+                    this.blinkState = false;
+                    midi.sendShortMsg(this.midi[0], this.midi[1], 0x00);
+                };
+
                 this.loopButtons[i] = new components.Button({
                     type: components.Button.prototype.types.push,
                     group: loopGroups[i],
                     midi: [0x90, loopMidi[i]],
                     key: "loop_halve",
+                    output: loopActiveOutput,
                 });
-                this.loopButtons[i].skipDeckStateRefresh = true;
+                this.loopButtons[i].outKey = "loop_enabled";
+                if (typeof this.loopButtons[i].disconnect === "function") {
+                    this.loopButtons[i].disconnect();
+                }
+                if (typeof this.loopButtons[i].connect === "function") {
+                    this.loopButtons[i].connect();
+                }
+                this.loopButtons[i].blinkTimer = 0;
+                this.loopButtons[i].blinkState = false;
                 this.registerDeckLedComponent(this.loopButtons[i]);
 
                 this.loopDoubleButtons[i] = new components.Button({
@@ -439,10 +471,113 @@ var SMCMixer;
                     group: loopGroups[i],
                     midi: [0x90, halveMidi[i]],
                     key: "beatloop_activate",
-                    outKey: "loop_enabled",
+                    output: loopActiveOutput,
                 });
-                this.loopHalveButtons[i].skipDeckStateRefresh = true;
+                this.loopHalveButtons[i].outKey = "loop_enabled";
+                if (typeof this.loopHalveButtons[i].disconnect === "function") {
+                    this.loopHalveButtons[i].disconnect();
+                }
+                if (typeof this.loopHalveButtons[i].connect === "function") {
+                    this.loopHalveButtons[i].connect();
+                }
+                this.loopHalveButtons[i].blinkTimer = 0;
+                this.loopHalveButtons[i].blinkState = false;
                 this.registerDeckLedComponent(this.loopHalveButtons[i]);
+            }
+
+            const deckColumns = [
+                {
+                    deckGroup: "[Channel1]",
+                    effectUnitGroup: "[EffectRack1_EffectUnit1]",
+                    effect1Group: "[EffectRack1_EffectUnit1_Effect1]",
+                    effect2Group: "[EffectRack1_EffectUnit1_Effect2]",
+                    deckEnableKey: "group_[Channel1]_enable",
+                    hotcueMidi: [0x11, 0x09],
+                    fxMidi: [0x18, 0x19],
+                    knobMidi: [0x10, 0x11],
+                },
+                {
+                    deckGroup: "[Channel2]",
+                    effectUnitGroup: "[EffectRack1_EffectUnit2]",
+                    effect1Group: "[EffectRack1_EffectUnit2_Effect1]",
+                    effect2Group: "[EffectRack1_EffectUnit2_Effect2]",
+                    deckEnableKey: "group_[Channel2]_enable",
+                    hotcueMidi: [0x16, 0x0E],
+                    fxMidi: [0x1E, 0x1F],
+                    knobMidi: [0x16, 0x17],
+                },
+            ];
+
+            for (let deckIndex = 0; deckIndex < deckColumns.length; deckIndex++) {
+                const config = deckColumns[deckIndex];
+                for (let hotcueIndex = 0; hotcueIndex < 2; hotcueIndex++) {
+                    const hotcueNumber = hotcueIndex + 1;
+                    const activateKey = `hotcue_${hotcueNumber}_activate`;
+                    const setKey = `hotcue_${hotcueNumber}_set`;
+                    const clearKey = `hotcue_${hotcueNumber}_clear`;
+                    const enabledKey = `hotcue_${hotcueNumber}_enabled`;
+                    const positionKey = `hotcue_${hotcueNumber}_position`;
+                    this.hotcueButtons[deckIndex][hotcueIndex] = new LongPressButton({
+                        type: components.Button.prototype.types.powerWindow,
+                        group: config.deckGroup,
+                        midi: [0x90, config.hotcueMidi[hotcueIndex]],
+                        key: activateKey,
+                        outKey: enabledKey,
+                        hotcuePositionKey: positionKey,
+                        hotcueActivateKey: activateKey,
+                        hotcueSetKey: setKey,
+                        hotcueClearKey: clearKey,
+                        isHotcueSet: function () {
+                            const enabled = engine.getValue(this.group, this.outKey) > 0;
+                            const position = engine.getValue(this.group, this.hotcuePositionKey);
+                            const hasPosition = typeof position === "number" && isFinite(position) && position >= 0;
+                            return enabled || hasPosition;
+                        },
+                        inToggle: function () {
+                            const isSet = this.isHotcueSet();
+                            if (this.isLongPressed) {
+                                if (!isSet) {
+                                    return;
+                                }
+                                engine.setValue(this.group, this.hotcueClearKey, 1);
+                                engine.setValue(this.group, this.hotcueClearKey, 0);
+                                return;
+                            }
+                            const targetKey = isSet ? this.hotcueActivateKey : this.hotcueSetKey;
+                            engine.setValue(this.group, targetKey, 1);
+                            engine.setValue(this.group, targetKey, 0);
+                        },
+                    });
+                    this.registerDeckLedComponent(this.hotcueButtons[deckIndex][hotcueIndex]);
+                }
+
+                engine.setValue(config.effectUnitGroup, config.deckEnableKey, 1);
+                this.fxButtons[deckIndex][0] = new components.Button({
+                    type: components.Button.prototype.types.toggle,
+                    group: config.effect1Group,
+                    midi: [0x90, config.fxMidi[0]],
+                    key: "enabled",
+                });
+                this.registerDeckLedComponent(this.fxButtons[deckIndex][0]);
+
+                this.fxButtons[deckIndex][1] = new components.Button({
+                    type: components.Button.prototype.types.toggle,
+                    group: config.effect2Group,
+                    midi: [0x90, config.fxMidi[1]],
+                    key: "enabled",
+                });
+                this.registerDeckLedComponent(this.fxButtons[deckIndex][1]);
+
+                this.effectKnobs[deckIndex][0] = new Encoder({
+                    group: config.effect1Group,
+                    midi: [0xB0, config.knobMidi[0]],
+                    inKey: "meta",
+                });
+                this.effectKnobs[deckIndex][1] = new Encoder({
+                    group: config.effect2Group,
+                    midi: [0xB0, config.knobMidi[1]],
+                    inKey: "meta",
+                });
             }
 
             this.registerDeckLedComponent(this.activeDeck.playButton);
