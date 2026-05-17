@@ -336,11 +336,14 @@ var SMCMixer;
             this.keylockButtons = new Array(4);
             this.pflButtons = new Array(4);
             this.syncButtons = new Array(2);
+            this.loopButtons = new Array(2);
+            this.loopDoubleButtons = new Array(2);
+            this.loopHalveButtons = new Array(2);
             this.faders = new Array(8);
             for (let i = 0; i < 4; i++) {
                 const channel = mapIndexToChannel(i);
                 const group = `[Channel${channel}]`;
-                const repurposedColumnOffset = (i === 0 && !this.isFourDeckMode()) ? 0x40 : 0;
+                const repurposedColumnOffset = ((i === 0 || i === 1) && !this.isFourDeckMode()) ? 0x40 : 0;
                 this.eqButtons[i] = new EqRack(i);
                 this.registerDeckLedComponent(this.eqButtons[i].lowKillButton);
                 this.registerDeckLedComponent(this.eqButtons[i].midKillButton);
@@ -407,6 +410,40 @@ var SMCMixer;
             });
             this.registerDeckLedComponent(this.syncButtons[1]);
 
+            // Loop controls — columns 3 (Deck 1) and 6 (Deck 2)
+            const loopGroups = ["[Channel1]", "[Channel2]"];
+            const loopMidi   = [0x02, 0x05];
+            const doublesMidi = [0x0A, 0x0D];
+            const halveMidi  = [0x1A, 0x1D];
+            for (let i = 0; i < 2; i++) {
+                this.loopButtons[i] = new components.Button({
+                    type: components.Button.prototype.types.push,
+                    group: loopGroups[i],
+                    midi: [0x90, loopMidi[i]],
+                    key: "loop_halve",
+                });
+                this.loopButtons[i].skipDeckStateRefresh = true;
+                this.registerDeckLedComponent(this.loopButtons[i]);
+
+                this.loopDoubleButtons[i] = new components.Button({
+                    type: components.Button.prototype.types.push,
+                    group: loopGroups[i],
+                    midi: [0x90, doublesMidi[i]],
+                    key: "loop_double",
+                });
+                this.loopDoubleButtons[i].skipDeckStateRefresh = true;
+                this.registerDeckLedComponent(this.loopDoubleButtons[i]);
+
+                this.loopHalveButtons[i] = new components.Button({
+                    type: components.Button.prototype.types.push,
+                    group: loopGroups[i],
+                    midi: [0x90, halveMidi[i]],
+                    key: "beatloop_activate",
+                    outKey: "loop_enabled",
+                });
+                this.loopHalveButtons[i].skipDeckStateRefresh = true;
+                this.registerDeckLedComponent(this.loopHalveButtons[i]);
+            }
 
             this.registerDeckLedComponent(this.activeDeck.playButton);
             this.registerDeckLedComponent(this.activeDeck.cueButton);

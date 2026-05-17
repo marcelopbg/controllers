@@ -102,8 +102,8 @@
       </control>
       <control>
         <group>[Channel1]</group>
-        <key>SMCMixer.controller.deadColumn3Input.input</key>
-        <description>Third S button (disabled).</description>
+        <key>SMCMixer.controller.loopDoubleButtons[0].input</key>
+        <description>Third S button (Deck 1 loop double).</description>
         <status>0x90</status>
         <midino>0x0A</midino>
         <options>
@@ -112,8 +112,8 @@
       </control>
       <control>
         <group>[Channel1]</group>
-        <key>SMCMixer.controller.deadColumn3Input.input</key>
-        <description>Third R button (disabled).</description>
+        <key>SMCMixer.controller.loopButtons[0].input</key>
+        <description>Third R button (Deck 1 loop halve).</description>
         <status>0x90</status>
         <midino>0x02</midino>
         <options>
@@ -132,8 +132,8 @@
       </control>
       <control>
         <group>[Channel1]</group>
-        <key>SMCMixer.controller.deadColumn3Input.input</key>
-        <description>Third square button (disabled).</description>
+        <key>SMCMixer.controller.loopHalveButtons[0].input</key>
+        <description>Third square button (Deck 1 beatloop activate).</description>
         <status>0x90</status>
         <midino>0x1A</midino>
         <options>
@@ -233,9 +233,9 @@
         </options>
       </control>
       <control>
-        <group>[Channel1]</group>
-        <key>SMCMixer.controller.quantizeButtons[1].input</key>
-        <description>Sixth S button.</description>
+        <group>[Channel2]</group>
+        <key>SMCMixer.controller.loopDoubleButtons[1].input</key>
+        <description>Sixth S button (Deck 2 loop double).</description>
         <status>0x90</status>
         <midino>0x0D</midino>
         <options>
@@ -274,9 +274,9 @@
         </options>
       </control>
       <control>
-        <group>[Channel1]</group>
-        <key>SMCMixer.controller.keylockButtons[1].input</key>
-        <description>Sixth R button.</description>
+        <group>[Channel2]</group>
+        <key>SMCMixer.controller.loopButtons[1].input</key>
+        <description>Sixth R button (Deck 2 loop halve).</description>
         <status>0x90</status>
         <midino>0x05</midino>
         <options>
@@ -315,9 +315,9 @@
         </options>
       </control>
       <control>
-        <group>[Channel1]</group>
-        <key>SMCMixer.controller.pflButtons[1].input</key>
-        <description>Sixth square button.</description>
+        <group>[Channel2]</group>
+        <key>SMCMixer.controller.loopHalveButtons[1].input</key>
+        <description>Sixth square button (Deck 2 beatloop activate).</description>
         <status>0x90</status>
         <midino>0x1D</midino>
         <options>

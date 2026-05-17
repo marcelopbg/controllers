@@ -7,6 +7,8 @@ This preset currently targets a centered 2-deck workflow and intentionally repur
 - Deck 1 EQ lives on **column 4**
 - Deck 2 EQ lives on **column 5**
 - **Column 3 is disabled** (bricked) to avoid accidental duplicate control/LED behavior
+- Sync utility is now active on the **M row** in columns 3 and 6
+- Loop controls are now active on the **R, S, Square rows** in columns 3 and 6
 
 The active mapping pair is:
 
@@ -27,17 +29,37 @@ The active mapping pair is:
 - Knob: `0x14`
 - Group target: `eqButtons[2]` / Channel 2 EQ group
 
-### Column 3 mostly disabled
+### Column 3 — Deck 1 utility
 
-These controls are intentionally routed to a no-op input handler (`deadColumn3Input`) so they do nothing:
+| Row | MIDI | Control |
+|-----|------|---------|
+| M (top) | `0x12` | Deck 1 Sync — LED lit when synced |
+| R | `0x02` | Deck 1 beatloop toggle — LED lit when loop active |
+| S | `0x0A` | Deck 1 loop double |
+| Square | `0x1A` | Deck 1 loop halve |
 
-- Buttons: `0x02 / 0x0A / 0x12`
-- Knob: `0x12`
+### Column 6 — Deck 2 utility
 
-Exception:
+| Row | MIDI | Control |
+|-----|------|---------|
+| M (top) | `0x15` | Deck 2 Sync — LED lit when synced |
+| R | `0x05` | Deck 2 beatloop toggle — LED lit when loop active |
+| S | `0x0D` | Deck 2 loop double |
+| Square | `0x1D` | Deck 2 loop halve |
 
-- **Top M button in column 3 (`0x12`) is now Deck 1 Sync (`[Channel1] sync_enabled`)**
-- **Top M button in column 6 (`0x15`) is now Deck 2 Sync (`[Channel2] sync_enabled`)**
+## Progress update
+
+Completed:
+
+- Sync mapped: columns 3 & 6, M row
+- Loop controls mapped: columns 3 & 6, R/S/Square rows
+  - R → `reloop_toggle` (LED tracks `loop_enabled`)
+  - S → `loop_double`
+  - Square → `loop_halve`
+
+Remaining next steps:
+
+- Map **Hot Cue** — all button rows in columns 3 and 6 are now used; hot cues will need a shift/layer approach.
 
 ## LED behavior notes
 
@@ -49,4 +71,6 @@ Exception:
 
 - The no-op handler is created as `SMCMixer.controller.deadColumn3Input` in `MVave-SMC-Mixer-scripts.js`.
 - EQ MIDI addresses are explicitly set by index arrays in `EqRack` to prevent implicit sequential collisions.
-- In 2-deck mode, first utility-column LED controls are shifted with an offset to keep Deck EQ LED feedback stable.
+- `loopButtons` are registered as deck LED components and track `loop_enabled` for real-time LED feedback.
+- `loopDoubleButtons` and `loopHalveButtons` have `skipDeckStateRefresh = true` (no meaningful LED state).
+- `keylockButtons[1]`, `quantizeButtons[1]`, and `pflButtons[1]` are still initialized but their MIDI bindings (`0x05`, `0x0D`, `0x1D`) have been reassigned to loop controls for Deck 2.
