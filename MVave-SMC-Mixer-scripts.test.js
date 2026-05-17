@@ -531,6 +531,46 @@ test("knobs 1/2/7/8 map to deck effect knobs", () => {
     assert.equal(h.controller.effectKnobs[1][1].midi[1], 0x17);
 });
 
+test("knobs 3 and 6 map to deck jog control", () => {
+    const h = createHarness();
+    assert.equal(h.controller.jogKnobDeck1.group, "[Channel1]");
+    assert.equal(h.controller.jogKnobDeck1.midi[1], 0x12);
+    assert.equal(h.controller.jogKnobDeck2.group, "[Channel2]");
+    assert.equal(h.controller.jogKnobDeck2.midi[1], 0x15);
+    assert.equal(h.controller.jogKnobs[0], h.controller.jogKnobDeck1);
+    assert.equal(h.controller.jogKnobs[1], h.controller.jogKnobDeck2);
+
+    h.controller.jogKnobDeck1.input(0, 0, 0x02, 0xB0, "[Channel1]");
+    assert.equal(h.engine.getValue("[Channel1]", "jog"), 1);
+
+    h.controller.jogKnobDeck2.input(0, 0, 0x42, 0xB0, "[Channel2]");
+    assert.equal(h.engine.getValue("[Channel2]", "jog"), -1);
+});
+
+test("jog knobs keep sending movement on repeated same-direction ticks", () => {
+    const h = createHarness();
+    const jogCalls = [];
+    const originalSetValue = h.engine.setValue;
+    h.engine.setValue = (group, key, value) => {
+        if (key === "jog") {
+            jogCalls.push({group: group, value: value});
+        }
+        originalSetValue(group, key, value);
+    };
+
+    h.controller.jogKnobDeck1.input(0, 0, 0x01, 0xB0, "[Channel1]");
+    h.controller.jogKnobDeck1.input(0, 0, 0x01, 0xB0, "[Channel1]");
+    h.controller.jogKnobDeck2.input(0, 0, 0x41, 0xB0, "[Channel2]");
+    h.controller.jogKnobDeck2.input(0, 0, 0x41, 0xB0, "[Channel2]");
+
+    assert.deepEqual(jogCalls, [
+        {group: "[Channel1]", value: 0.5},
+        {group: "[Channel1]", value: 0.5},
+        {group: "[Channel2]", value: -0.5},
+        {group: "[Channel2]", value: -0.5},
+    ]);
+});
+
 test("beatloop buttons output LED state from loop_enabled", () => {
     const h = createHarness();
     assert.equal(h.controller.loopButtons[0].outKey, "loop_enabled");

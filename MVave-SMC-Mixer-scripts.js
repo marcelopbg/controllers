@@ -597,11 +597,31 @@ var SMCMixer;
                 midi: [0xB0, 0x14],
                 key: "gain",
             });
-            this.balanceKnob = new Encoder({
-                group: "[Master]",
-                midi: [0xB0, 0x15],
-                key: "balance",
+            const jogInput = function (_channel, _control, value, _status, _group) {
+                if (value === 0x40) {
+                    return;
+                }
+                let jogDelta = value & 0x3F;
+                if (value > 0x40) {
+                    jogDelta = -jogDelta;
+                }
+                engine.setValue(this.group, "jog", jogDelta / .2);
+            };
+            this.jogKnobDeck1 = new Encoder({
+                group: "[Channel1]",
+                midi: [0xB0, 0x12],
+                key: "jog",
+                outConnect: false,
+                input: jogInput,
             });
+            this.jogKnobDeck2 = new Encoder({
+                group: "[Channel2]",
+                midi: [0xB0, 0x15],
+                key: "jog",
+                outConnect: false,
+                input: jogInput,
+            });
+            this.jogKnobs = [this.jogKnobDeck1, this.jogKnobDeck2];
             this.headGainKnob = new Encoder({
                 group: "[Master]",
                 midi: [0xB0, 0x16],
@@ -673,10 +693,6 @@ var SMCMixer;
                 midi: [0x90, 0x5F],
                 inKey: "toggle_recording",
                 outKey: "status",
-            });
-            this.deadColumn3Input = new components.Button({
-                group: "[Channel1]",
-                input: function () {},
             });
             this.deckLeftButton = new components.Button({
                 type: components.Button.prototype.types.powerWindow,

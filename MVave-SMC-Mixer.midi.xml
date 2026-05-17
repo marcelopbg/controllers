@@ -366,8 +366,8 @@
       </control>
       <control>
         <group>[Channel1]</group>
-        <key>SMCMixer.controller.deadColumn3Input.input</key>
-        <description>Knob 3 (disabled).</description>
+        <key>SMCMixer.controller.jogKnobDeck1.input</key>
+        <description>Knob 3 (Deck 1 jog test).</description>
         <status>0xB0</status>
         <midino>0x12</midino>
         <options>
@@ -395,9 +395,9 @@
         </options>
       </control>
       <control>
-        <group>[Master]</group>
-        <key>SMCMixer.controller.balanceKnob.input</key>
-        <description>Knob 6.</description>
+        <group>[Channel2]</group>
+        <key>SMCMixer.controller.jogKnobDeck2.input</key>
+        <description>Knob 6 (Deck 2 jog test).</description>
         <status>0xB0</status>
         <midino>0x15</midino>
         <options>
