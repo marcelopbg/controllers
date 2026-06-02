@@ -142,6 +142,18 @@ var SMCMixer;
         }
     }
 
+    class InvertedPot extends Pot {
+        input(_channel, _control, value, _status, _group) {
+            const receivingFirstValue = this.hardwarePos === undefined;
+            this.hardwarePos = 1 - this.inValueScale(value);
+            engine.setParameter(this.group, this.inKey, this.hardwarePos);
+            if (receivingFirstValue) {
+                this.firstValueReceived = true;
+                this.connect();
+            }
+        }
+    }
+
     class EqRack extends components.ComponentContainer {
         constructor(index) {
             super({});
@@ -398,7 +410,7 @@ var SMCMixer;
                 });
             }
 
-            this.faders[0] = new Pot({
+            this.faders[0] = new InvertedPot({
                 group: "[Master]",
                 midi: [0xE0],
                 key: "crossfader",
