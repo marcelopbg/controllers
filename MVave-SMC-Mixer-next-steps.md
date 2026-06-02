@@ -1,76 +1,67 @@
-# MVave SMC Mixer - Current Mapping Notes
+# M-Vave SMC-Mixer Current Mapping (Visual Layout)
 
-## Current behavior (implemented and stable)
+This document reflects the current mapping in:
+- MVave-SMC-Mixer.midi.xml
+- MVave-SMC-Mixer-scripts.js
 
-This preset currently targets a centered two-deck workflow and intentionally repurposes controls:
+Deck mode is currently set to two-deck by default.
 
-- Deck 1 EQ lives on **column 4**
-- Deck 2 EQ lives on **column 5**
-- **Column 3 is disabled** (bricked) to avoid accidental duplicate control/LED behavior
-- Sync utility is now active on the **M row** in columns 3 and 6
-- Loop controls are now active on the **R, S, Square rows** in columns 3 and 6
+All controls mapped to Channel 3 or Channel 4 are marked as:
+- **[REPURPOSE FOR 2-DECK]**
 
-The active mapping pair is:
+Duplicate controls intentionally called out for repurpose are marked as:
+- **[REPURPOSE FOR 2-DECK - DUPLICATE]**
 
-- `MVave-SMC-Mixer.midi.xml`
-- `MVave-SMC-Mixer-scripts.js`
+## Visual Strip Layout (Left to Right)
 
-## Deck EQ routing summary
+The mixer has 8 vertical strips. Each strip is represented with the same top-to-bottom order as the hardware:
+- Top knob
+- M button
+- S button
+- R button
+- Square button
+- Slider
 
-### Deck 1 (column 4)
+| Physical row \ Column | Col 1 (leftmost) | Col 2 | Col 3 | Col 4 | Col 5 | Col 6 | Col 7 | Col 8 (rightmost) |
+|---|---|---|---|---|---|---|---|---|
+| Top knob | Deck 1 FX1 meta (0xB0/0x10) | Deck 1 FX2 meta (0xB0/0x11) | Deck 1 jog (0xB0/0x12) | Channel 1 pregain (0xB0/0x13) | Channel 2 pregain (0xB0/0x14) | Deck 2 jog (0xB0/0x15) | Deck 2 FX1 meta (0xB0/0x16) | Deck 2 FX2 meta (0xB0/0x17) |
+| M button | CH3 EQ high kill (0x90/0x10) **[REPURPOSE FOR 2-DECK]** | Deck 1 Hotcue 1 (0x90/0x11) | Deck 1 Sync (0x90/0x12) | CH1 EQ high kill (0x90/0x13) | CH2 EQ high kill (0x90/0x14) | Deck 2 Sync (0x90/0x15) | Deck 2 Hotcue 1 (0x90/0x16) | CH4 Slip (0x90/0x17) **[REPURPOSE FOR 2-DECK]** |
+| S button | CH3 EQ mid kill (0x90/0x08) **[REPURPOSE FOR 2-DECK]** | Deck 1 Hotcue 2 (0x90/0x09) | Deck 1 loop double (0x90/0x0A) | CH1 EQ mid kill (0x90/0x0B) | CH2 EQ mid kill (0x90/0x0C) | Deck 2 loop double (0x90/0x0D) | Deck 2 Hotcue 2 (0x90/0x0E) | CH4 Quantize (0x90/0x0F) **[REPURPOSE FOR 2-DECK]** |
+| R button | CH3 EQ low kill (0x90/0x00) **[REPURPOSE FOR 2-DECK]** | CH3 QuickEffect enable (0x90/0x01) **[REPURPOSE FOR 2-DECK]** | Deck 1 loop halve (0x90/0x02) | CH1 EQ low kill (0x90/0x03) | CH2 EQ low kill (0x90/0x04) | Deck 2 loop halve (0x90/0x05) | CH2 Keylock (0x90/0x06) | CH4 Keylock (0x90/0x07) **[REPURPOSE FOR 2-DECK]** |
+| Square button | Deck 1 FX1 enable (0x90/0x18) | Deck 1 FX2 enable (0x90/0x19) | Deck 1 beatloop activate (0x90/0x1A) | CH1 QuickEffect enable (0x90/0x1B) | CH2 QuickEffect enable (0x90/0x1C) | Deck 2 beatloop activate (0x90/0x1D) | Deck 2 FX1 enable (0x90/0x1E) | Deck 2 FX2 enable (0x90/0x1F) |
+| Slider | Master crossfader (0xE0) | CH1 volume (0xE1) **[REPURPOSE FOR 2-DECK - DUPLICATE]** | CH1 rate (0xE2) | CH1 volume (0xE3) | CH2 volume (0xE4) | CH2 rate (0xE5) | CH2 rate (0xE6) **[REPURPOSE FOR 2-DECK - DUPLICATE]** | CH4 rate (0xE7) **[REPURPOSE FOR 2-DECK]** |
 
-- Buttons: `0x03 / 0x0B / 0x13 / 0x1B`
-- Knob: `0x13`
-- Group target: `eqButtons[1]` / Channel 1 EQ group
+## Bottom Row Buttons
 
-### Deck 2 (column 5)
+| MIDI | Current function | Notes |
+|---|---|---|
+| 0x90/0x2E | Active deck backButton input | Script behavior: beatjump backward trigger |
+| 0x90/0x2F | Active deck forwardButton input | Script behavior: beatjump forward trigger |
+| 0x90/0x5B | deckLeftButton | Deck select left (long press goes to Channel 3 only in 4-deck mode) |
+| 0x90/0x5C | deckRightButton | Deck select right (long press goes to Channel 4 only in 4-deck mode) |
+| 0x90/0x5D | Cue | Active deck cue |
+| 0x90/0x5E | Play | Active deck play |
+| 0x90/0x5F | Record | Toggle recording |
+| 0x90/0x61 | Library Down | MoveDown |
+| 0x90/0x60 | Library Up | MoveUp |
+| 0x90/0x62 | Library Left | Focus/tree navigation logic |
+| 0x90/0x63 | Library Right | Focus/library navigation logic |
 
-- Buttons: `0x04 / 0x0C / 0x14 / 0x1C`
-- Knob: `0x14`
-- Group target: `eqButtons[2]` / Channel 2 EQ group
+## Side Buttons
 
-### Column 3 — Deck 1 utility
+| Control | Mapping status |
+|---|---|
+| BT | Not mapped in current XML/script |
+| SHIFT | Not mapped in current XML/script |
 
-| Row | MIDI | Control |
-|-----|------|---------|
-| M (top) | `0x12` | Deck 1 Sync — LED lit when synced |
-| R | `0x02` | Deck 1 beatloop toggle — LED lit when loop active |
-| S | `0x0A` | Deck 1 loop double |
-| Square | `0x1A` | Deck 1 loop halve |
+## Important Notes For 2-Deck Workflow
 
-### Column 6 — Deck 2 utility
-
-| Row | MIDI | Control |
-|-----|------|---------|
-| M (top) | `0x15` | Deck 2 Sync — LED lit when synced |
-| R | `0x05` | Deck 2 beatloop toggle — LED lit when loop active |
-| S | `0x0D` | Deck 2 loop double |
-| Square | `0x1D` | Deck 2 loop halve |
-
-## Progress update
-
-Completed:
-
-- Sync mapped: columns 3 & 6, M row
-- Loop controls mapped: columns 3 & 6, R/S/Square rows
-  - R → `reloop_toggle` (LED tracks `loop_enabled`)
-  - S → `loop_double`
-  - Square → `loop_halve`
-
-Remaining next steps:
-
-- Map **Hotcue** — all button rows in columns 3 and 6 are currently used, so hotcues will need a shift/layer approach.
-
-## LED behavior notes
-
-- EQ LED output for Deck 1/2 is explicitly aligned to the repurposed column addresses in script logic.
-- Utility LED controls that would collide with Deck EQ LEDs are offset away from the repurposed area in 2-deck mode.
-- Startup lighting now lights columns **4 and 5** (not 3 and 4), matching the Deck 1/2 EQ layout.
-
-## Important implementation details
-
-- The no-op handler is created as `SMCMixer.controller.deadColumn3Input` in `MVave-SMC-Mixer-scripts.js`.
-- EQ MIDI addresses are explicitly set by index arrays in `EqRack` to prevent implicit sequential collisions.
-- `loopButtons` are registered as deck LED components and track `loop_enabled` for real-time LED feedback.
-- `loopDoubleButtons` and `loopHalveButtons` have `skipDeckStateRefresh = true` (no meaningful LED state).
-- `keylockButtons[1]`, `quantizeButtons[1]`, and `pflButtons[1]` are still initialized, but their MIDI bindings (`0x05`, `0x0D`, `0x1D`) are reassigned to Deck 2 loop controls.
+- Leftmost slider is intentionally mapped to Master crossfader.
+- Any control marked **[REPURPOSE FOR 2-DECK]** is currently tied to Channel 3/4 and should be reassigned to useful Deck 1/2 functionality.
+- Any control marked **[REPURPOSE FOR 2-DECK - DUPLICATE]** is a duplicate mapping and should be reassigned to a unique 2-deck control.
+- Suggested repurpose targets:
+  - extra loop functions
+  - additional FX toggles or macros
+  - key adjust/reset functions
+  - sampler or stem controls
+  - browser/load shortcuts

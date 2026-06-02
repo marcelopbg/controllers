@@ -535,9 +535,9 @@
         </options>
       </control>
       <control>
-        <group>[Channel3]</group>
+        <group>[Master]</group>
         <key>SMCMixer.controller.faders[0].input</key>
-        <description>Fader 1.</description>
+        <description>Fader 1 (Crossfader).</description>
         <status>0xE0</status>
         <options>
           <script-binding/>

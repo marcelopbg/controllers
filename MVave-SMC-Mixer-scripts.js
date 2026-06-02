@@ -398,6 +398,13 @@ var SMCMixer;
                 });
             }
 
+            this.faders[0] = new Pot({
+                group: "[Master]",
+                midi: [0xE0],
+                key: "crossfader",
+                softTakeover: true,
+            });
+
             this.syncButtons[0] = new components.Button({
                 type: components.Button.prototype.types.toggle,
                 group: "[Channel1]",
