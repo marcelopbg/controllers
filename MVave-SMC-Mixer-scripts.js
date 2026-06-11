@@ -142,13 +142,30 @@ var SMCMixer;
         }
     }
 
+    class InvertedPot extends Pot {
+        input(_channel, _control, value, _status, _group) {
+            const receivingFirstValue = this.hardwarePos === undefined;
+            this.hardwarePos = 1 - this.inValueScale(value);
+            engine.setParameter(this.group, this.inKey, this.hardwarePos);
+            if (receivingFirstValue) {
+                this.firstValueReceived = true;
+                this.connect();
+            }
+        }
+    }
+
     class EqRack extends components.ComponentContainer {
         constructor(index) {
             super({});
             const channel = mapIndexToChannel(index);
+            const knobMidiByIndex = [0x10, 0x13, 0x14, 0x54];
+            const lowMidiByIndex = [0x00, 0x03, 0x04, 0x44];
+            const midMidiByIndex = [0x08, 0x0B, 0x0C, 0x4C];
+            const highMidiByIndex = [0x10, 0x13, 0x14, 0x54];
+            const quickMidiByIndex = [0x18, 0x1B, 0x1C, 0x5C];
             this.knob = new Encoder({
                 group: `[Channel${channel}]`,
-                midi: [0xB0, 0x10 + index],
+                midi: [0xB0, knobMidiByIndex[index]],
                 inKey: "pregain",
             });
 
@@ -249,7 +266,7 @@ var SMCMixer;
             this.highKillButton = new LongPressButton({
                 type: components.Button.prototype.types.powerWindow,
                 group: `[EqualizerRack1_[Channel${channel}]_Effect1]`,
-                midi: [0x90, 0x10 + index],
+                midi: [0x90, highMidiByIndex[index]],
                 key: "button_parameter3",
                 output: function (value) {
                     if (this.blinkTimer && this.blinkTimer !== 0) {
@@ -262,7 +279,7 @@ var SMCMixer;
             this.midKillButton = new LongPressButton({
                 type: components.Button.prototype.types.toggle,
                 group: `[EqualizerRack1_[Channel${channel}]_Effect1]`,
-                midi: [0x90, 0x08 + index],
+                midi: [0x90, midMidiByIndex[index]],
                 key: "button_parameter2",
                 output: function (value) {
                     if (this.blinkTimer && this.blinkTimer !== 0) {
@@ -275,7 +292,7 @@ var SMCMixer;
             this.lowKillButton = new LongPressButton({
                 type: components.Button.prototype.types.toggle,
                 group: `[EqualizerRack1_[Channel${channel}]_Effect1]`,
-                midi: [0x90, 0x00 + index],
+                midi: [0x90, lowMidiByIndex[index]],
                 key: "button_parameter1",
                 output: function (value) {
                     if (this.blinkTimer && this.blinkTimer !== 0) {
@@ -288,7 +305,7 @@ var SMCMixer;
             this.quickEffectButton = new LongPressButton({
                 type: components.Button.prototype.types.toggle,
                 group: `[QuickEffectRack1_[Channel${channel}]]`,
-                midi: [0x90, 0x18 + index],
+                midi: [0x90, quickMidiByIndex[index]],
                 key: "enabled",
                 inToggle: btnInToggle(),
             });
@@ -325,16 +342,23 @@ var SMCMixer;
             this.bootLedTestEnabled = true;
             this.bootLedTestTimer = 0;
             this.bootLedTestIntervalMs = 120;
-
             this.eqButtons = new Array(4);
             this.slipButtons = new Array(4);
             this.quantizeButtons = new Array(4);
             this.keylockButtons = new Array(4);
             this.pflButtons = new Array(4);
+            this.syncButtons = new Array(2);
+            this.loopButtons = new Array(2);
+            this.loopDoubleButtons = new Array(2);
+            this.loopHalveButtons = new Array(2);
+            this.hotcueButtons = [new Array(2), new Array(2)];
+            this.fxButtons = [new Array(2), new Array(2)];
+            this.effectKnobs = [new Array(2), new Array(2)];
             this.faders = new Array(8);
             for (let i = 0; i < 4; i++) {
                 const channel = mapIndexToChannel(i);
                 const group = `[Channel${channel}]`;
+                const repurposedColumnOffset = ((i === 0 || i === 1) && !this.isFourDeckMode()) ? 0x40 : 0;
                 this.eqButtons[i] = new EqRack(i);
                 this.registerDeckLedComponent(this.eqButtons[i].lowKillButton);
                 this.registerDeckLedComponent(this.eqButtons[i].midKillButton);
@@ -343,30 +367,34 @@ var SMCMixer;
                 this.slipButtons[i] = new components.Button({
                     type: components.Button.prototype.types.toggle,
                     group: group,
-                    midi: [0x90, i + 0x14],
+                    midi: [0x90, i + 0x14 + repurposedColumnOffset],
                     key: "slip_enabled",
                 });
+                this.slipButtons[i].skipDeckStateRefresh = true;
                 this.registerDeckLedComponent(this.slipButtons[i]);
                 this.quantizeButtons[i] = new components.Button({
                     type: components.Button.prototype.types.toggle,
                     group: group,
-                    midi: [0x90, 0x0C + i],
+                    midi: [0x90, 0x0C + i + repurposedColumnOffset],
                     key: "quantize",
                 });
+                this.quantizeButtons[i].skipDeckStateRefresh = true;
                 this.registerDeckLedComponent(this.quantizeButtons[i]);
                 this.keylockButtons[i] = new components.Button({
                     type: components.Button.prototype.types.toggle,
                     group: group,
-                    midi: [0x90, 0x04 + i],
+                    midi: [0x90, 0x04 + i + repurposedColumnOffset],
                     key: "keylock",
                 });
+                this.keylockButtons[i].skipDeckStateRefresh = true;
                 this.registerDeckLedComponent(this.keylockButtons[i]);
                 this.pflButtons[i] = new components.Button({
                     type: components.Button.prototype.types.toggle,
                     group: group,
-                    midi: [0x90, 0x1C + i],
+                    midi: [0x90, 0x1C + i + repurposedColumnOffset],
                     key: "pfl",
                 });
+                this.pflButtons[i].skipDeckStateRefresh = true;
                 this.registerDeckLedComponent(this.pflButtons[i]);
                 this.faders[i] = new Pot({
                     group: group,
@@ -381,6 +409,203 @@ var SMCMixer;
                     softTakeover: true,
                 });
             }
+
+            this.faders[0] = new InvertedPot({
+                group: "[Master]",
+                midi: [0xE0],
+                key: "crossfader",
+                softTakeover: true,
+            });
+
+            this.syncButtons[0] = new components.Button({
+                type: components.Button.prototype.types.toggle,
+                group: "[Channel1]",
+                midi: [0x90, 0x12],
+                key: "sync_enabled",
+            });
+            this.registerDeckLedComponent(this.syncButtons[0]);
+            this.syncButtons[1] = new components.Button({
+                type: components.Button.prototype.types.toggle,
+                group: "[Channel2]",
+                midi: [0x90, 0x15],
+                key: "sync_enabled",
+            });
+            this.registerDeckLedComponent(this.syncButtons[1]);
+
+            // Loop controls — columns 3 (Deck 1) and 6 (Deck 2)
+            const loopGroups = ["[Channel1]", "[Channel2]"];
+            const loopMidi   = [0x02, 0x05];
+            const doublesMidi = [0x0A, 0x0D];
+            const halveMidi  = [0x1A, 0x1D];
+            for (let i = 0; i < 2; i++) {
+                const loopActiveOutput = function (value) {
+                    if (value > 0) {
+                        if (!this.blinkTimer || this.blinkTimer === 0) {
+                            this.blinkState = false;
+                            midi.sendShortMsg(this.midi[0], this.midi[1], 0x00);
+                            this.blinkTimer = engine.beginTimer(300, () => {
+                                this.blinkState = !this.blinkState;
+                                midi.sendShortMsg(this.midi[0], this.midi[1], this.blinkState ? 0x7F : 0x00);
+                            });
+                        }
+                        return;
+                    }
+                    if (this.blinkTimer && this.blinkTimer !== 0) {
+                        engine.stopTimer(this.blinkTimer);
+                        this.blinkTimer = 0;
+                    }
+                    this.blinkState = false;
+                    midi.sendShortMsg(this.midi[0], this.midi[1], 0x00);
+                };
+
+                this.loopButtons[i] = new components.Button({
+                    type: components.Button.prototype.types.push,
+                    group: loopGroups[i],
+                    midi: [0x90, loopMidi[i]],
+                    key: "loop_halve",
+                    output: loopActiveOutput,
+                });
+                this.loopButtons[i].outKey = "loop_enabled";
+                if (typeof this.loopButtons[i].disconnect === "function") {
+                    this.loopButtons[i].disconnect();
+                }
+                if (typeof this.loopButtons[i].connect === "function") {
+                    this.loopButtons[i].connect();
+                }
+                this.loopButtons[i].blinkTimer = 0;
+                this.loopButtons[i].blinkState = false;
+                this.registerDeckLedComponent(this.loopButtons[i]);
+
+                this.loopDoubleButtons[i] = new components.Button({
+                    type: components.Button.prototype.types.push,
+                    group: loopGroups[i],
+                    midi: [0x90, doublesMidi[i]],
+                    key: "loop_double",
+                });
+                this.loopDoubleButtons[i].skipDeckStateRefresh = true;
+                this.registerDeckLedComponent(this.loopDoubleButtons[i]);
+
+                this.loopHalveButtons[i] = new components.Button({
+                    type: components.Button.prototype.types.push,
+                    group: loopGroups[i],
+                    midi: [0x90, halveMidi[i]],
+                    key: "beatloop_activate",
+                    output: loopActiveOutput,
+                });
+                this.loopHalveButtons[i].outKey = "loop_enabled";
+                if (typeof this.loopHalveButtons[i].disconnect === "function") {
+                    this.loopHalveButtons[i].disconnect();
+                }
+                if (typeof this.loopHalveButtons[i].connect === "function") {
+                    this.loopHalveButtons[i].connect();
+                }
+                this.loopHalveButtons[i].blinkTimer = 0;
+                this.loopHalveButtons[i].blinkState = false;
+                this.registerDeckLedComponent(this.loopHalveButtons[i]);
+            }
+
+            const deckColumns = [
+                {
+                    deckGroup: "[Channel1]",
+                    effectUnitGroup: "[EffectRack1_EffectUnit1]",
+                    effect1Group: "[EffectRack1_EffectUnit1_Effect1]",
+                    effect2Group: "[EffectRack1_EffectUnit1_Effect2]",
+                    deckEnableKey: "group_[Channel1]_enable",
+                    hotcueMidi: [0x11, 0x09],
+                    fxMidi: [0x18, 0x19],
+                    knobMidi: [0x10, 0x11],
+                },
+                {
+                    deckGroup: "[Channel2]",
+                    effectUnitGroup: "[EffectRack1_EffectUnit2]",
+                    effect1Group: "[EffectRack1_EffectUnit2_Effect1]",
+                    effect2Group: "[EffectRack1_EffectUnit2_Effect2]",
+                    deckEnableKey: "group_[Channel2]_enable",
+                    hotcueMidi: [0x16, 0x0E],
+                    fxMidi: [0x1E, 0x1F],
+                    knobMidi: [0x16, 0x17],
+                },
+            ];
+
+            for (let deckIndex = 0; deckIndex < deckColumns.length; deckIndex++) {
+                const config = deckColumns[deckIndex];
+                for (let hotcueIndex = 0; hotcueIndex < 2; hotcueIndex++) {
+                    const hotcueNumber = hotcueIndex + 1;
+                    const activateKey = `hotcue_${hotcueNumber}_activate`;
+                    const setKey = `hotcue_${hotcueNumber}_set`;
+                    const clearKey = `hotcue_${hotcueNumber}_clear`;
+                    const enabledKey = `hotcue_${hotcueNumber}_enabled`;
+                    const positionKey = `hotcue_${hotcueNumber}_position`;
+                    this.hotcueButtons[deckIndex][hotcueIndex] = new LongPressButton({
+                        type: components.Button.prototype.types.powerWindow,
+                        group: config.deckGroup,
+                        midi: [0x90, config.hotcueMidi[hotcueIndex]],
+                        key: activateKey,
+                        outKey: enabledKey,
+                        hotcuePositionKey: positionKey,
+                        hotcueActivateKey: activateKey,
+                        hotcueSetKey: setKey,
+                        hotcueClearKey: clearKey,
+                        isHotcueSet: function () {
+                            const enabled = engine.getValue(this.group, this.outKey) > 0;
+                            const position = engine.getValue(this.group, this.hotcuePositionKey);
+                            const hasPosition = typeof position === "number" && isFinite(position) && position >= 0;
+                            return enabled || hasPosition;
+                        },
+                        inToggle: function () {
+                            const isSet = this.isHotcueSet();
+                            if (this.isLongPressed) {
+                                if (!isSet) {
+                                    return;
+                                }
+                                engine.setValue(this.group, this.hotcueClearKey, 1);
+                                engine.setValue(this.group, this.hotcueClearKey, 0);
+                                return;
+                            }
+                            const targetKey = isSet ? this.hotcueActivateKey : this.hotcueSetKey;
+                            engine.setValue(this.group, targetKey, 1);
+                            engine.setValue(this.group, targetKey, 0);
+                        },
+                    });
+                    this.hotcueButtons[deckIndex][hotcueIndex].outKey = enabledKey;
+                    if (typeof this.hotcueButtons[deckIndex][hotcueIndex].disconnect === "function") {
+                        this.hotcueButtons[deckIndex][hotcueIndex].disconnect();
+                    }
+                    if (typeof this.hotcueButtons[deckIndex][hotcueIndex].connect === "function") {
+                        this.hotcueButtons[deckIndex][hotcueIndex].connect();
+                    }
+                    this.registerDeckLedComponent(this.hotcueButtons[deckIndex][hotcueIndex]);
+                }
+
+                engine.setValue(config.effectUnitGroup, config.deckEnableKey, 1);
+                this.fxButtons[deckIndex][0] = new components.Button({
+                    type: components.Button.prototype.types.toggle,
+                    group: config.effect1Group,
+                    midi: [0x90, config.fxMidi[0]],
+                    key: "enabled",
+                });
+                this.registerDeckLedComponent(this.fxButtons[deckIndex][0]);
+
+                this.fxButtons[deckIndex][1] = new components.Button({
+                    type: components.Button.prototype.types.toggle,
+                    group: config.effect2Group,
+                    midi: [0x90, config.fxMidi[1]],
+                    key: "enabled",
+                });
+                this.registerDeckLedComponent(this.fxButtons[deckIndex][1]);
+
+                this.effectKnobs[deckIndex][0] = new Encoder({
+                    group: config.effect1Group,
+                    midi: [0xB0, config.knobMidi[0]],
+                    inKey: "meta",
+                });
+                this.effectKnobs[deckIndex][1] = new Encoder({
+                    group: config.effect2Group,
+                    midi: [0xB0, config.knobMidi[1]],
+                    inKey: "meta",
+                });
+            }
+
             this.registerDeckLedComponent(this.activeDeck.playButton);
             this.registerDeckLedComponent(this.activeDeck.cueButton);
             this.registerDeckLedComponent(this.activeDeck.backButton);
@@ -391,11 +616,31 @@ var SMCMixer;
                 midi: [0xB0, 0x14],
                 key: "gain",
             });
-            this.balanceKnob = new Encoder({
-                group: "[Master]",
-                midi: [0xB0, 0x15],
-                key: "balance",
+            const jogInput = function (_channel, _control, value, _status, _group) {
+                if (value === 0x40) {
+                    return;
+                }
+                let jogDelta = value & 0x3F;
+                if (value > 0x40) {
+                    jogDelta = -jogDelta;
+                }
+                engine.setValue(this.group, "jog", jogDelta / .2);
+            };
+            this.jogKnobDeck1 = new Encoder({
+                group: "[Channel1]",
+                midi: [0xB0, 0x12],
+                key: "jog",
+                outConnect: false,
+                input: jogInput,
             });
+            this.jogKnobDeck2 = new Encoder({
+                group: "[Channel2]",
+                midi: [0xB0, 0x15],
+                key: "jog",
+                outConnect: false,
+                input: jogInput,
+            });
+            this.jogKnobs = [this.jogKnobDeck1, this.jogKnobDeck2];
             this.headGainKnob = new Encoder({
                 group: "[Master]",
                 midi: [0xB0, 0x16],
@@ -494,7 +739,8 @@ var SMCMixer;
             });
             this.updateDeckLedVisibility();
             this.updateDeckSelectIndicatorLeds();
-            this.startBootLedTest();
+            this.lightAllColumnsOnLoad();
+            // this.startBootLedTest();
         }
 
         getDeckMode() {
@@ -541,6 +787,17 @@ var SMCMixer;
             const isDeck2 = this.activeDeck.currentDeck === "[Channel2]";
             this.setButtonLedFromMidi(this.activeDeck.backButton, isDeck2 ? 0x00 : 0x7F);
             this.setButtonLedFromMidi(this.activeDeck.forwardButton, isDeck2 ? 0x7F : 0x00);
+        }
+
+        lightAllColumnsOnLoad() {
+            for (let control = 0x00; control <= 0x1F; control++) {
+                midi.sendShortMsg(0x90, control, 0x00);
+            }
+            // In two-deck mode, Deck 1/2 EQ uses the 4th and 5th columns.
+            for (let blockBase = 0x00; blockBase <= 0x18; blockBase += 0x08) {
+                midi.sendShortMsg(0x90, blockBase + 0x03, 0x7F);
+                midi.sendShortMsg(0x90, blockBase + 0x04, 0x7F);
+            }
         }
 
         createDeckLedProbeCases(statusBytes) {
@@ -604,6 +861,7 @@ var SMCMixer;
 
                 if (this.deckLedProbeIndex >= this.deckLedProbeCases.length) {
                     this.stopBootLedTest();
+                    this.updateDeckLedVisibility();
                     this.updateDeckSelectIndicatorLeds();
                     print("[MVAVE LED BOOT TEST] finished");
                     return;
@@ -664,6 +922,10 @@ var SMCMixer;
 
         updateDeckLedVisibility() {
             for (const component of this.deckLedComponents) {
+                if (component.skipDeckStateRefresh) {
+                    midi.sendShortMsg(component.midi[0], component.midi[1], 0x00);
+                    continue;
+                }
                 if (!this.isDeckComponentEnabled(component)) {
                     midi.sendShortMsg(component.midi[0], component.midi[1], 0x00);
                     continue;

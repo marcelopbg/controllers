@@ -51,9 +51,9 @@
         </options>
       </control>
       <control>
-        <group>[QuickEffectRack1_[Channel3]]</group>
-        <key>SMCMixer.controller.eqButtons[0].quickEffectButton.input</key>
-        <description>First square button.</description>
+        <group>[EffectRack1_EffectUnit1_Effect1]</group>
+        <key>SMCMixer.controller.fxButtons[0][0].input</key>
+        <description>First square button (Deck 1 Effect 1 enable).</description>
         <status>0x90</status>
         <midino>0x18</midino>
         <options>
@@ -61,9 +61,9 @@
         </options>
       </control>
       <control>
-        <group>[EqualizerRack1_[Channel1]_Effect1]</group>
-        <key>SMCMixer.controller.eqButtons[1].midKillButton.input</key>
-        <description>Second S button.</description>
+        <group>[Channel1]</group>
+        <key>SMCMixer.controller.hotcueButtons[0][1].input</key>
+        <description>Second S button (Deck 1 Hotcue 2).</description>
         <status>0x90</status>
         <midino>0x09</midino>
         <options>
@@ -71,8 +71,8 @@
         </options>
       </control>
       <control>
-        <group>[EqualizerRack1_[Channel1]_Effect1]</group>
-        <key>SMCMixer.controller.eqButtons[1].lowKillButton.input</key>
+        <group>[QuickEffectRack1_[Channel3]]</group>
+        <key>SMCMixer.controller.eqButtons[0].quickEffectButton.input</key>
         <description>Second R button.</description>
         <status>0x90</status>
         <midino>0x01</midino>
@@ -81,9 +81,9 @@
         </options>
       </control>
       <control>
-        <group>[EqualizerRack1_[Channel1]_Effect1]</group>
-        <key>SMCMixer.controller.eqButtons[1].highKillButton.input</key>
-        <description>Second M button.</description>
+        <group>[Channel1]</group>
+        <key>SMCMixer.controller.hotcueButtons[0][0].input</key>
+        <description>Second M button (Deck 1 Hotcue 1).</description>
         <status>0x90</status>
         <midino>0x11</midino>
         <options>
@@ -91,9 +91,9 @@
         </options>
       </control>
       <control>
-        <group>[QuickEffectRack1_[Channel1]]</group>
-        <key>SMCMixer.controller.eqButtons[1].quickEffectButton.input</key>
-        <description>Second square button.</description>
+        <group>[EffectRack1_EffectUnit1_Effect2]</group>
+        <key>SMCMixer.controller.fxButtons[0][1].input</key>
+        <description>Second square button (Deck 1 Effect 2 enable).</description>
         <status>0x90</status>
         <midino>0x19</midino>
         <options>
@@ -101,9 +101,9 @@
         </options>
       </control>
       <control>
-        <group>[EqualizerRack1_[Channel2]_Effect1]</group>
-        <key>SMCMixer.controller.eqButtons[2].midKillButton.input</key>
-        <description>Third S button.</description>
+        <group>[Channel1]</group>
+        <key>SMCMixer.controller.loopDoubleButtons[0].input</key>
+        <description>Third S button (Deck 1 loop double).</description>
         <status>0x90</status>
         <midino>0x0A</midino>
         <options>
@@ -111,9 +111,9 @@
         </options>
       </control>
       <control>
-        <group>[EqualizerRack1_[Channel2]_Effect1]</group>
-        <key>SMCMixer.controller.eqButtons[2].lowKillButton.input</key>
-        <description>Third R button.</description>
+        <group>[Channel1]</group>
+        <key>SMCMixer.controller.loopButtons[0].input</key>
+        <description>Third R button (Deck 1 loop halve).</description>
         <status>0x90</status>
         <midino>0x02</midino>
         <options>
@@ -121,9 +121,9 @@
         </options>
       </control>
       <control>
-        <group>[EqualizerRack1_[Channel2]_Effect1]</group>
-        <key>SMCMixer.controller.eqButtons[2].highKillButton.input</key>
-        <description>Third M button.</description>
+        <group>[Channel1]</group>
+        <key>SMCMixer.controller.syncButtons[0].input</key>
+        <description>Third M button (Deck 1 Sync).</description>
         <status>0x90</status>
         <midino>0x12</midino>
         <options>
@@ -131,9 +131,9 @@
         </options>
       </control>
       <control>
-        <group>[QuickEffectRack1_[Channel2]]</group>
-        <key>SMCMixer.controller.eqButtons[2].quickEffectButton.input</key>
-        <description>Third square button.</description>
+        <group>[Channel1]</group>
+        <key>SMCMixer.controller.loopHalveButtons[0].input</key>
+        <description>Third square button (Deck 1 beatloop activate).</description>
         <status>0x90</status>
         <midino>0x1A</midino>
         <options>
@@ -141,8 +141,8 @@
         </options>
       </control>
       <control>
-        <group>[EqualizerRack1_[Channel4]_Effect1]</group>
-        <key>SMCMixer.controller.eqButtons[3].midKillButton.input</key>
+        <group>[EqualizerRack1_[Channel1]_Effect1]</group>
+        <key>SMCMixer.controller.eqButtons[1].midKillButton.input</key>
         <description>Fourth S button.</description>
         <status>0x90</status>
         <midino>0x0B</midino>
@@ -151,8 +151,8 @@
         </options>
       </control>
       <control>
-        <group>[EqualizerRack1_[Channel4]_Effect1]</group>
-        <key>SMCMixer.controller.eqButtons[3].lowKillButton.input</key>
+        <group>[EqualizerRack1_[Channel1]_Effect1]</group>
+        <key>SMCMixer.controller.eqButtons[1].lowKillButton.input</key>
         <description>Third R button.</description>
         <status>0x90</status>
         <midino>0x03</midino>
@@ -161,8 +161,8 @@
         </options>
       </control>
       <control>
-        <group>[EqualizerRack1_[Channel4]_Effect1]</group>
-        <key>SMCMixer.controller.eqButtons[3].highKillButton.input</key>
+        <group>[EqualizerRack1_[Channel1]_Effect1]</group>
+        <key>SMCMixer.controller.eqButtons[1].highKillButton.input</key>
         <description>Fourth M button.</description>
         <status>0x90</status>
         <midino>0x13</midino>
@@ -171,8 +171,8 @@
         </options>
       </control>
       <control>
-        <group>[QuickEffectRack1_[Channel4]]</group>
-        <key>SMCMixer.controller.eqButtons[3].quickEffectButton.input</key>
+        <group>[QuickEffectRack1_[Channel1]]</group>
+        <key>SMCMixer.controller.eqButtons[1].quickEffectButton.input</key>
         <description>Fourth square button.</description>
         <status>0x90</status>
         <midino>0x1B</midino>
@@ -182,9 +182,9 @@
       </control>
       <!-- Slip Mode -->
       <control>
-        <group>[Channel3]</group>
-        <key>SMCMixer.controller.slipButtons[0].input</key>
-        <description>Fifth M button.</description>
+        <group>[EqualizerRack1_[Channel2]_Effect1]</group>
+        <key>SMCMixer.controller.eqButtons[2].highKillButton.input</key>
+        <description>Fifth M button (Deck 2 EQ).</description>
         <status>0x90</status>
         <midino>0x14</midino>
         <options>
@@ -192,9 +192,9 @@
         </options>
       </control>
       <control>
-        <group>[Channel1]</group>
-        <key>SMCMixer.controller.slipButtons[1].input</key>
-        <description>Sixth M button.</description>
+        <group>[Channel2]</group>
+        <key>SMCMixer.controller.syncButtons[1].input</key>
+        <description>Sixth M button (Deck 2 Sync).</description>
         <status>0x90</status>
         <midino>0x15</midino>
         <options>
@@ -203,8 +203,8 @@
       </control>
       <control>
         <group>[Channel2]</group>
-        <key>SMCMixer.controller.slipButtons[2].input</key>
-        <description>Seventh M button.</description>
+        <key>SMCMixer.controller.hotcueButtons[1][0].input</key>
+        <description>Seventh M button (Deck 2 Hotcue 1).</description>
         <status>0x90</status>
         <midino>0x16</midino>
         <options>
@@ -223,9 +223,9 @@
       </control>
       <!-- Quantize -->
       <control>
-        <group>[Channel3]</group>
-        <key>SMCMixer.controller.quantizeButtons[0].input</key>
-        <description>Fifth S button.</description>
+        <group>[EqualizerRack1_[Channel2]_Effect1]</group>
+        <key>SMCMixer.controller.eqButtons[2].midKillButton.input</key>
+        <description>Fifth S button (Deck 2 EQ).</description>
         <status>0x90</status>
         <midino>0x0C</midino>
         <options>
@@ -233,9 +233,9 @@
         </options>
       </control>
       <control>
-        <group>[Channel1]</group>
-        <key>SMCMixer.controller.quantizeButtons[1].input</key>
-        <description>Sixth S button.</description>
+        <group>[Channel2]</group>
+        <key>SMCMixer.controller.loopDoubleButtons[1].input</key>
+        <description>Sixth S button (Deck 2 loop double).</description>
         <status>0x90</status>
         <midino>0x0D</midino>
         <options>
@@ -244,8 +244,8 @@
       </control>
       <control>
         <group>[Channel2]</group>
-        <key>SMCMixer.controller.quantizeButtons[2].input</key>
-        <description>Seventh S button.</description>
+        <key>SMCMixer.controller.hotcueButtons[1][1].input</key>
+        <description>Seventh S button (Deck 2 Hotcue 2).</description>
         <status>0x90</status>
         <midino>0x0E</midino>
         <options>
@@ -264,9 +264,9 @@
       </control>
       <!-- Key Lock -->
       <control>
-        <group>[Channel3]</group>
-        <key>SMCMixer.controller.keylockButtons[0].input</key>
-        <description>Fifth R button.</description>
+        <group>[EqualizerRack1_[Channel2]_Effect1]</group>
+        <key>SMCMixer.controller.eqButtons[2].lowKillButton.input</key>
+        <description>Fifth R button (Deck 2 EQ).</description>
         <status>0x90</status>
         <midino>0x04</midino>
         <options>
@@ -274,9 +274,9 @@
         </options>
       </control>
       <control>
-        <group>[Channel1]</group>
-        <key>SMCMixer.controller.keylockButtons[1].input</key>
-        <description>Sixth R button.</description>
+        <group>[Channel2]</group>
+        <key>SMCMixer.controller.loopButtons[1].input</key>
+        <description>Sixth R button (Deck 2 loop halve).</description>
         <status>0x90</status>
         <midino>0x05</midino>
         <options>
@@ -305,9 +305,9 @@
       </control>
       <!-- Headphone Cue / PFL -->
       <control>
-        <group>[Channel3]</group>
-        <key>SMCMixer.controller.pflButtons[0].input</key>
-        <description>Fifth square button.</description>
+        <group>[QuickEffectRack1_[Channel2]]</group>
+        <key>SMCMixer.controller.eqButtons[2].quickEffectButton.input</key>
+        <description>Fifth square button (Deck 2 EQ).</description>
         <status>0x90</status>
         <midino>0x1C</midino>
         <options>
@@ -315,9 +315,9 @@
         </options>
       </control>
       <control>
-        <group>[Channel1]</group>
-        <key>SMCMixer.controller.pflButtons[1].input</key>
-        <description>Sixth square button.</description>
+        <group>[Channel2]</group>
+        <key>SMCMixer.controller.loopHalveButtons[1].input</key>
+        <description>Sixth square button (Deck 2 beatloop activate).</description>
         <status>0x90</status>
         <midino>0x1D</midino>
         <options>
@@ -325,9 +325,9 @@
         </options>
       </control>
       <control>
-        <group>[Channel2]</group>
-        <key>SMCMixer.controller.pflButtons[2].input</key>
-        <description>Seventh square button.</description>
+        <group>[EffectRack1_EffectUnit2_Effect1]</group>
+        <key>SMCMixer.controller.fxButtons[1][0].input</key>
+        <description>Seventh square button (Deck 2 Effect 1 enable).</description>
         <status>0x90</status>
         <midino>0x1E</midino>
         <options>
@@ -335,9 +335,9 @@
         </options>
       </control>
       <control>
-        <group>[Channel4]</group>
-        <key>SMCMixer.controller.pflButtons[3].input</key>
-        <description>Eighth square button.</description>
+        <group>[EffectRack1_EffectUnit2_Effect2]</group>
+        <key>SMCMixer.controller.fxButtons[1][1].input</key>
+        <description>Eighth square button (Deck 2 Effect 2 enable).</description>
         <status>0x90</status>
         <midino>0x1F</midino>
         <options>
@@ -345,9 +345,9 @@
         </options>
       </control>
       <control>
-        <group>[Channel3]</group>
-        <key>SMCMixer.controller.eqButtons[0].knob.input</key>
-        <description>Knob 1.</description>
+        <group>[EffectRack1_EffectUnit1_Effect1]</group>
+        <key>SMCMixer.controller.effectKnobs[0][0].input</key>
+        <description>Knob 1 (Deck 1 Effect 1 knob).</description>
         <status>0xB0</status>
         <midino>0x10</midino>
         <options>
@@ -355,9 +355,9 @@
         </options>
       </control>
       <control>
-        <group>[Channel1]</group>
-        <key>SMCMixer.controller.eqButtons[1].knob.input</key>
-        <description>Knob 2.</description>
+        <group>[EffectRack1_EffectUnit1_Effect2]</group>
+        <key>SMCMixer.controller.effectKnobs[0][1].input</key>
+        <description>Knob 2 (Deck 1 Effect 2 knob).</description>
         <status>0xB0</status>
         <midino>0x11</midino>
         <options>
@@ -365,9 +365,9 @@
         </options>
       </control>
       <control>
-        <group>[Channel2]</group>
-        <key>SMCMixer.controller.eqButtons[2].knob.input</key>
-        <description>Knob 3.</description>
+        <group>[Channel1]</group>
+        <key>SMCMixer.controller.jogKnobDeck1.input</key>
+        <description>Knob 3 (Deck 1 jog test).</description>
         <status>0xB0</status>
         <midino>0x12</midino>
         <options>
@@ -375,9 +375,9 @@
         </options>
       </control>
       <control>
-        <group>[Channel4]</group>
-        <key>SMCMixer.controller.eqButtons[3].knob.input</key>
-        <description>Knob 3.</description>
+        <group>[Channel1]</group>
+        <key>SMCMixer.controller.eqButtons[1].knob.input</key>
+        <description>Knob 4.</description>
         <status>0xB0</status>
         <midino>0x13</midino>
         <options>
@@ -385,9 +385,9 @@
         </options>
       </control>
       <control>
-        <group>[Master]</group>
-        <key>SMCMixer.controller.gainKnob.input</key>
-        <description>Knob 4.</description>
+        <group>[Channel2]</group>
+        <key>SMCMixer.controller.eqButtons[2].knob.input</key>
+        <description>Knob 5 (Deck 2).</description>
         <status>0xB0</status>
         <midino>0x14</midino>
         <options>
@@ -395,9 +395,9 @@
         </options>
       </control>
       <control>
-        <group>[Master]</group>
-        <key>SMCMixer.controller.balanceKnob.input</key>
-        <description>Knob 5.</description>
+        <group>[Channel2]</group>
+        <key>SMCMixer.controller.jogKnobDeck2.input</key>
+        <description>Knob 6 (Deck 2 jog test).</description>
         <status>0xB0</status>
         <midino>0x15</midino>
         <options>
@@ -405,9 +405,9 @@
         </options>
       </control>
       <control>
-        <group>[Master]</group>
-        <key>SMCMixer.controller.headGainKnob.input</key>
-        <description>Knob 6.</description>
+        <group>[EffectRack1_EffectUnit2_Effect1]</group>
+        <key>SMCMixer.controller.effectKnobs[1][0].input</key>
+        <description>Knob 7 (Deck 2 Effect 1 knob).</description>
         <status>0xB0</status>
         <midino>0x16</midino>
         <options>
@@ -415,9 +415,9 @@
         </options>
       </control>
       <control>
-        <group>[Master]</group>
-        <key>SMCMixer.controller.headMixKnob.input</key>
-        <description>Knob 7.</description>
+        <group>[EffectRack1_EffectUnit2_Effect2]</group>
+        <key>SMCMixer.controller.effectKnobs[1][1].input</key>
+        <description>Knob 8 (Deck 2 Effect 2 knob).</description>
         <status>0xB0</status>
         <midino>0x17</midino>
         <options>
@@ -535,9 +535,9 @@
         </options>
       </control>
       <control>
-        <group>[Channel3]</group>
+        <group>[Master]</group>
         <key>SMCMixer.controller.faders[0].input</key>
-        <description>Fader 1.</description>
+        <description>Fader 1 (Crossfader).</description>
         <status>0xE0</status>
         <options>
           <script-binding/>
@@ -553,8 +553,8 @@
         </options>
       </control>
       <control>
-        <group>[Channel2]</group>
-        <key>SMCMixer.controller.faders[2].input</key>
+        <group>[Channel1]</group>
+        <key>SMCMixer.controller.faders[5].input</key>
         <description>Fader 3.</description>
         <status>0xE2</status>
         <options>
@@ -562,8 +562,8 @@
         </options>
       </control>
       <control>
-        <group>[Channel4]</group>
-        <key>SMCMixer.controller.faders[3].input</key>
+        <group>[Channel1]</group>
+        <key>SMCMixer.controller.faders[1].input</key>
         <description>Fader 4.</description>
         <status>0xE3</status>
         <options>
@@ -571,8 +571,8 @@
         </options>
       </control>
       <control>
-        <group>[Channel3]</group>
-        <key>SMCMixer.controller.faders[4].input</key>
+        <group>[Channel2]</group>
+        <key>SMCMixer.controller.faders[2].input</key>
         <description>Fader 5.</description>
         <status>0xE4</status>
         <options>
@@ -580,8 +580,8 @@
         </options>
       </control>
       <control>
-        <group>[Channel1]</group>
-        <key>SMCMixer.controller.faders[5].input</key>
+        <group>[Channel2]</group>
+        <key>SMCMixer.controller.faders[6].input</key>
         <description>Fader 6.</description>
         <status>0xE5</status>
         <options>
